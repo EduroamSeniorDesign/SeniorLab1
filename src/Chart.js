@@ -15,9 +15,9 @@ class LineChart extends Component {
         scales: {
             yAxes: [{
                 ticks: {
-                    max: this.props.maxY,
+                    max: 200,
                     min: 0,
-                    stepSize: 3
+                    stepSize: 5
                 }
             }]
         },
@@ -26,24 +26,31 @@ class LineChart extends Component {
             text: this.props.title
         },
         pan: {
-            enabled: true,
-            mode: 'x'
+            //Issue panning in one direction
+            enabled: false,
+            mode: 'xy',
         },
         zoom: {
-            enabled: true,
-            mode: 'xy'
+            enabled: false,
+            mode: 'xy',
+            drag: false,
+            rangeMin: {
+                // Format of min pan range depends on scale type
+                y: -40
+            },
+            rangeMax: {
+                // Format of max pan range depends on scale type
+                y: 500
+            }
         }
     }
-    componentWillMount() {
-        Chart.plugins.register(zoom)
-    }
+
     render() {
         return (
-            <Line data ={this.props.data} options = {this.options}/>
+            <Line data ={this.props.data} options = {this.config}/>
         );
     }
 }
-
 
 
 
