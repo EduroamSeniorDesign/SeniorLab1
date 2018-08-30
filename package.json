@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "axios": "^0.18.0",
+    "chart.js": "^2.7.2",
+    "chartjs-plugin-zoom": "^0.6.4",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "react-scripts": "1.1.5"
