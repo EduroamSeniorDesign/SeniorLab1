@@ -4,19 +4,36 @@ import './App.css';
 import LineChart from './Chart'
 
 class App extends Component {
-  render() {
-    let labels = Array.from({ length: 300 }, (v, k) => 300 - k)
-    let current = 100;
-    let testdata = Array.from({ length: 300 }, (v, k) => {
-      if(k<10||k>50){
-        console.log(current);  
-        let random = Math.random() < 0.5 ? -1 : 1;
-        current = current + random;
-        return current;
+
+  constructor(props){
+    super(props)
+    this.state = {
+      testdata : Array.from({ length: 300 }, (x,y) => {
+        let time = new Date();
+        time.setSeconds(time.getSeconds()-(300-y));
+        return {x:time,y:Math.random()*100}
       }
-      else
-        return null;
-    })
+    ),
+      current : 100
+    };
+  }
+
+  componentDidMount() {
+    console.log(this.state);
+    this.interval = setInterval(() => {
+      console.log(this.state);
+      let random = Math.random() < 0.5 ? -1 : 1;
+      random = this.state.current + random;
+      let datain = {x:new Date(),y:random};
+      let data = this.state.testdata;
+      console.log(datain)
+      data.push(datain);
+      this.setState({ testdata: data, current : random })
+    }, 1000)
+  }
+  
+  render() {
+    
     return (
       <div className="App">
         <header className="App-header">
@@ -24,14 +41,16 @@ class App extends Component {
           <h1 className="App-title">Welcome to React</h1>
         </header>
         <p className="App-intro">
-          <LineChart data={{
-            labels: labels,
+          <LineChart dataset={this.state.testdata} data={{
+            labels: this.state.labels,
             datasets: [
               {
-                backgroundColor: 'rgba(255,0,0,.2)',
+                backgroundColor:'rgba(255,0,0,.2)' ,
+                borderColor: 'rgba(255,0,0,.2)',
+                fill: false,
+                cubicInterpolationMode: 'monotone',
                 label: "Temperature",
-                data: testdata,
-                borderDash: [5, 5]
+                data: this.state.testdata,
               }
             ]
           }} />
