@@ -24,7 +24,7 @@ class LineChart extends Component {
         },
         plugins: {
             streaming: {            // enabled by default
-                duration: 300000,    // data in the past 20000 ms will be displayed
+                duration: 3000,    // data in the past 20000 ms will be displayed
                 refresh: 1000,      // onRefresh callback will be called every 1000 ms
                 frameRate: 30,      // chart is drawn 30 times every second
                 pause: false,       // chart is not paused    
@@ -41,20 +41,20 @@ class LineChart extends Component {
             enabled: true,    // Enable panning
             mode: 'x',        // Allow panning in the x direction
             rangeMin: {
-                x: null       // Min value of the delay option
+                x: 0       // Min value of the delay option
             },
             rangeMax: {
-                x: null       // Max value of the delay option
+                x: 1       // Max value of the delay option
             }
         },
         zoom: {
             enabled: true,    // Enable zooming
             mode: 'x',        // Allow zooming in the x direction
             rangeMin: {
-                x: null       // Min value of the duration option
+                x: 0       // Min value of the duration option
             },
             rangeMax: {
-                x: null       // Max value of the duration option
+                x: 300000       // Max value of the duration option
             }
         }
     }
