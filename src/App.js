@@ -3,11 +3,11 @@ import logo from './logo.svg';
 import './App.css';
 import LineChart from './Chart'
 import Axios from 'axios';
-
+var qs = require('qs');
 
 
 class App extends Component {
-
+  
   constructor(props) {
     super(props)
     this.state = {
@@ -19,9 +19,10 @@ class App extends Component {
       ),
       current: 100,
       currentScale: 'C',
-      number: '3194159830',
+      number: '13194159830',
       lowTemp: 0,
-      highTemp: 90
+      highTemp: 50000,
+      visited: false
     };
   }
   handleInputChange = (event) => {
@@ -36,26 +37,30 @@ class App extends Component {
 
   postToTwilio = async (message)=>{
     const accountSid = 'AC932d4e912ca2519f89b850c523de7447';
-    const authToken = '3f0ede03771209d3a8f1f3c2f91f5b6c';
+    const authToken = '3f0ede03771209d3a8f1f3c2f91XXX6c';
+    //fab with 5
     let auth = {
       username: accountSid,
       password: authToken
     }
-    await Axios({ method:'post', url: `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, auth:auth, params:message})
+
+
+    await Axios.post(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,qs.stringify(message),{auth:auth})
+    //await Axios({ method:'post', url: `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, auth:auth, params:message})
   }
   sendMessage = (hl, temp) => {
     if (hl === 'high') {
      this.postToTwilio({
-          body: `The temperature is very high. Its ${temp} degrees!`,
+          Body: `The temperature is very high. Its ${temp} degrees!`,
           From: '+17128230557',
-          To: this.state.number
+          To: '+'+this.state.number
         })
     }
     if (hl === 'low') {
       this.postToTwilio({
-          body: `The temperature is very low. Its ${temp} degrees!`,
+          Body: `The temperature is very low. Its ${temp} degrees!`,
           From: '+17128230557',
-          to: this.state.number
+          To: '+'+this.state.number
         })
         .then(message => console.log(message.sid))
         .done();
@@ -72,18 +77,21 @@ class App extends Component {
 
   startInterval = () => {
     this.interval = setInterval(() => {
-      console.log(this.state);
       let random = Math.random() < 0.5 ? -1 : 1;
       random = this.state.current + random;
       let datain = { x: new Date(), y: random };
       let data = this.state.testdata;
-      console.log(datain)
       data.push(datain);
       this.setState({ testdata: data, current: random })
-      if(datain.y > this.state.highTemp){
+      if(datain.y > this.state.highTemp&&!this.state.visited){
         this.sendMessage('high',datain.y);
-      }else if(datain.y < this.state.lowTemp){
+        this.setState({ visited:true })
+      }else if(datain.y < this.state.lowTemp &&!this.state.visited){
         this.sendMessage('low',datain.y)
+        this.setState({ visited:true })
+      }else if(datain.y < this.state.highTemp&& datain.y > this.state.lowTemp&&this.state.visited){
+        console.log(this.state)
+        this.setState({ visited:false })
       }
     }, 1000)
 
