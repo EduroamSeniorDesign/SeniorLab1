@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import LineChart from './Chart'
+import { start } from 'repl';
 
 class App extends Component {
 
@@ -14,12 +15,20 @@ class App extends Component {
         return {x:time,y:Math.random()*100}
       }
     ),
-      current : 100
+      current : 100,
+      currentScale: 'F'
     };
   }
 
   componentDidMount() {
     console.log(this.state);
+    this.startInterval();
+  }
+  
+  toF=(temp)=>temp*(9/5)+32
+  toC = (temp)=> temp*(5/9)-32
+  
+  startInterval=()=>{
     this.interval = setInterval(() => {
       console.log(this.state);
       let random = Math.random() < 0.5 ? -1 : 1;
@@ -30,10 +39,27 @@ class App extends Component {
       data.push(datain);
       this.setState({ testdata: data, current : random })
     }, 1000)
+
   }
-  
+  switchScales = ()=>{
+    this.clearInterval();
+    if(this.state.currentScale === 'F'){
+      let temp = this.state.testdata.map((a)=>{
+        a.y = this.toC(a.y)
+        return a
+      })
+      this.setState({testdata: temp, currentScale:'C'})
+    }
+    else if(this.state.currentScale === 'C'){
+      let temp = this.state.testdata.map((a)=>{
+        a.y = this.toF(a.y)
+        return a
+      })
+      this.setState({testdata: temp, currentScale:'F'})
+    }
+  }
+
   render() {
-    
     return (
       <div className="App">
         <header className="App-header">
