@@ -25,6 +25,7 @@ class App extends Component {
     };
   }
   handleInputChange = (event) => {
+    console.log(event);
     const target = event.target;
     const value = target.value;
     const name = target.name;
@@ -89,13 +90,14 @@ class App extends Component {
 
   }
   switchScales = () => {
-    this.clearInterval();
+    clearInterval();
     if (this.state.currentScale === 'F') {
       let temp = this.state.testdata.map((a) => {
         a.y = this.toC(a.y)
         return a
       })
       this.setState({ testdata: temp, currentScale: 'C' })
+      this.startInterval();
     }
     else if (this.state.currentScale === 'C') {
       let temp = this.state.testdata.map((a) => {
@@ -103,6 +105,8 @@ class App extends Component {
         return a
       })
       this.setState({ testdata: temp, currentScale: 'F' })
+      console.log(this.state)
+      this.startInterval();
     }
   }
 
@@ -112,13 +116,16 @@ class App extends Component {
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">Welcome to React</h1>
-          High Temp: <input type="text" name="highTemp" value={this.state.highTemp} onChange={this.handleChange} />
-          Low Temp: <input type="text" name="lowTemp" value={this.state.lowTemp} onChange={this.handleChange} />
-          Number to Send To: <input type="text" name="number" value={this.state.number} onChange={this.handleChange} />
+          High Temp: <input type="text" name="highTemp" value={this.state.highTemp} onChange={this.handleInputChange} />
+          Low Temp: <input type="text" name="lowTemp" value={this.state.lowTemp} onChange={this.handleInputChange} />
+          Number to Send To: <input type="text" name="number" value={this.state.number} onChange={this.handleInputChange} />
         </header>
         <p className="App-intro">
+        <button onClick={this.switchScales}>
+          Switch Scale(Currently this.state.currentScale)
+        </button>
           <LineChart dataset={this.state.testdata} data={{
-            labels: this.state.labels,
+            labels: [],
             datasets: [
               {
                 backgroundColor: 'rgba(255,0,0,.2)',

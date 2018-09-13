@@ -11,6 +11,7 @@ import streaming from 'chartjs-plugin-streaming'
 class LineChart extends Component {
     refreshChart = (chart)=>{
         chart.data.datasets[0].data = this.props.dataset;
+        chart.data.labels=[]
 
     }
     config = {
@@ -61,7 +62,7 @@ class LineChart extends Component {
 
     render() {
         return (
-            <Line data ={this.props.data} options = {this.config}/>
+            <Line data ={this.props.data} labels={[]} options = {this.config}/>
         );
     }
 }
