@@ -7,16 +7,11 @@ var qs = require('qs');
 
 
 class App extends Component {
-  
+  url = '192.168.86.39:5000'
   constructor(props) {
     super(props)
     this.state = {
-      testdata: Array.from({ length: 300 }, (x, y) => {
-        let time = new Date();
-        time.setSeconds(time.getSeconds() - (300 - y));
-        return { x: time, y: Math.random() * 100 }
-      }
-      ),
+      testdata: [],
       current: 100,
       currentScale: 'C',
       number: '13194159830',
@@ -36,7 +31,7 @@ class App extends Component {
     });
   }
 
-  postToTwilio = async (message)=>{
+  postToTwilio = async (message) => {
     const accountSid = 'AC932d4e912ca2519f89b850c523de7447';
     const authToken = '3f0ede03771209d3a8f1f3c2f91XXX6c';
     //fab with 5
@@ -46,23 +41,23 @@ class App extends Component {
     }
 
 
-    await Axios.post(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,qs.stringify(message),{auth:auth})
+    await Axios.post(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, qs.stringify(message), { auth: auth })
     //await Axios({ method:'post', url: `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, auth:auth, params:message})
   }
   sendMessage = (hl, temp) => {
     if (hl === 'high') {
-     this.postToTwilio({
-          Body: `The temperature is very high. Its ${temp} degrees!`,
-          From: '+17128230557',
-          To: '+'+this.state.number
-        })
+      this.postToTwilio({
+        Body: `The temperature is very high. Its ${temp} degrees!`,
+        From: '+17128230557',
+        To: '+' + this.state.number
+      })
     }
     if (hl === 'low') {
       this.postToTwilio({
-          Body: `The temperature is very low. Its ${temp} degrees!`,
-          From: '+17128230557',
-          To: '+'+this.state.number
-        })
+        Body: `The temperature is very low. Its ${temp} degrees!`,
+        From: '+17128230557',
+        To: '+' + this.state.number
+      })
         .then(message => console.log(message.sid))
         .done();
     }
@@ -70,6 +65,20 @@ class App extends Component {
 
   componentDidMount() {
     console.log(this.state);
+    let url = `http://${this.url}/all`
+    Axios.get(url, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      }
+    }).then((initialdata) => {
+      initialdata = initialdata.map((a) => {
+        let b = {}
+        b.x = a.time
+        b.y = a.data
+        return b;
+      })
+      this.setState({ testdata: initialdata })
+    }).catch(err => console.error(err))
     this.startInterval();
   }
 
@@ -77,22 +86,36 @@ class App extends Component {
   toC = (temp) => temp * (5 / 9) - 32
 
   startInterval = () => {
-    this.interval = setInterval(() => {
-      let random = Math.random() < 0.5 ? -1 : 1;
-      random = this.state.current + random;
-      let datain = { x: new Date(), y: random };
+    this.interval = setInterval(async () => {
+      let datain
+      try {
+        let url = `http://${this.url}/recent`
+        let receved = await Axios.get(url, {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+          }
+        })
+        if (this.state.currentScale === 'F') {
+          receved.time = this.ToC(receved.time)
+        }
+        datain = { x: receved.time, y: receved.tempC };
+      }
+      catch (err) {
+        datain = { x: 0, y: null }
+      }
+
       let data = this.state.testdata;
       data.push(datain);
-      this.setState({ testdata: data, current: random })
-      if(datain.y > this.state.highTemp&&!this.state.visited){
-        this.sendMessage('high',datain.y);
-        this.setState({ visited:true })
-      }else if(datain.y < this.state.lowTemp &&!this.state.visited){
-        this.sendMessage('low',datain.y)
-        this.setState({ visited:true })
-      }else if(datain.y < this.state.highTemp&& datain.y > this.state.lowTemp&&this.state.visited){
+      this.setState({ testdata: data, current: 0 })
+      if (datain.y > this.state.highTemp && !this.state.visited) {
+        this.sendMessage('high', datain.y);
+        this.setState({ visited: true })
+      } else if (datain.y < this.state.lowTemp && !this.state.visited) {
+        this.sendMessage('low', datain.y)
+        this.setState({ visited: true })
+      } else if (datain.y < this.state.highTemp && datain.y > this.state.lowTemp && this.state.visited) {
         console.log(this.state)
-        this.setState({ visited:false })
+        this.setState({ visited: false })
       }
     }, 1000)
 
@@ -117,6 +140,11 @@ class App extends Component {
       this.startInterval();
     }
   }
+  postButton = async () => {
+    let url = `http://${this.url}/recent`
+    await Axios.post(url, { seconds: 10 });
+
+  }
 
   render() {
     return (
@@ -129,8 +157,8 @@ class App extends Component {
           Number to Send To: <input type="text" name="number" value={this.state.number} onChange={this.handleInputChange} />
         </header>
         <p className="App-intro">
-        <button onClick={this.switchScales}>
-          Switch Scale(Currently this.state.currentScale)
+          <button onClick={this.switchScales}>
+            Switch Scale(Currently this.state.currentScale)
         </button>
           <LineChart dataset={this.state.testdata} data={{
             labels: [],
@@ -145,6 +173,7 @@ class App extends Component {
               }
             ]
           }} />
+          <button onClick={this.postButton}>Display on pi</button>
         </p>
       </div>
     );
