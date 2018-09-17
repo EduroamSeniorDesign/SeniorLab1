@@ -141,8 +141,12 @@ class App extends Component {
     }
   }
   postButton = async () => {
-    let url = `http://${this.url}/recent`
-    await Axios.post(url, { seconds: 10 });
+    let url = `http://${this.url}/post`
+    await Axios.post(url, { seconds: 10 },{
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      }
+    });
 
   }
 
