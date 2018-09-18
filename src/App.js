@@ -18,10 +18,10 @@ class App extends Component {
       lowTemp: 0,
       highTemp: 50000,
       visited: false,
-      sendEnable:false,
-      highTempMessage:'The temperature is very high. Its ',
-      lowTempMessage:'The temperature is very low. Its ',
-      intervalID:0
+      sendEnable: false,
+      highTempMessage: 'The temperature is very high. Its ',
+      lowTempMessage: 'The temperature is very low. Its ',
+      intervalID: 0
     };
   }
   handleInputChange = (event) => {
@@ -32,7 +32,7 @@ class App extends Component {
 
     this.setState({
       [name]: value,
-      sendEnable:false
+      sendEnable: false
     });
   }
 
@@ -75,7 +75,7 @@ class App extends Component {
       headers: {
         'Access-Control-Allow-Origin': '*',
       },
-      timeout:2000
+      timeout: 2000
     }).then((initialdata) => {
       initialdata = initialdata.data.data.map((a) => {
         let b = {}
@@ -84,7 +84,7 @@ class App extends Component {
         return b;
       })
       this.setState({ testdata: initialdata })
-    }).catch(err => console.error(err)).finally(()=>{
+    }).catch(err => console.error(err)).finally(() => {
       this.startInterval();
     })
   }
@@ -101,12 +101,12 @@ class App extends Component {
           headers: {
             'Access-Control-Allow-Origin': '*',
           },
-          timeout:3000
+          timeout: 3000
         })
         if (this.state.currentScale === 'F') {
           receved.data.tempC = this.toF(receved.data.tempC)
         }
-        let temp = receved.data.tempC ? receved.data.tempC:Number.NaN
+        let temp = receved.data.tempC ? receved.data.tempC : Number.NaN
         datain = { x: receved.data.time, y: temp };
       }
       catch (err) {
@@ -115,11 +115,11 @@ class App extends Component {
 
       let data = this.state.testdata;
       data.unshift(datain);
-      this.setState({ testdata: data})
-      if (datain.y > this.state.highTemp && !this.state.visited) {
+      this.setState({ testdata: data })
+      if (datain.y > this.state.highTemp && !this.state.visited&&this.state.sendEnable) {
         this.sendMessage('high', datain.y);
         this.setState({ visited: true })
-      } else if (datain.y < this.state.lowTemp && !this.state.visited) {
+      } else if (datain.y < this.state.lowTemp && !this.state.visited&&this.state.sendEnable) {
         this.sendMessage('low', datain.y)
         this.setState({ visited: true })
       } else if (datain.y < this.state.highTemp && datain.y > this.state.lowTemp && this.state.visited) {
@@ -150,11 +150,11 @@ class App extends Component {
   }
   postButton = async () => {
     let url = `http://${this.url}/post`
-    await Axios.post(url, { seconds: 10 },{
+    await Axios.post(url, { seconds: 10 }, {
       headers: {
         'Access-Control-Allow-Origin': '*',
       },
-      timeout:1000
+      timeout: 1000
     });
 
   }
@@ -168,14 +168,14 @@ class App extends Component {
             High Temp Message: <input type="text" name="highTempMessage" value={this.state.highTempMessage} onChange={this.handleInputChange} />
           </p>
           <p>
-          Low Temp: <input type="text" name="lowTemp" value={this.state.lowTemp} onChange={this.handleInputChange} />
-          Low Temp Message: <input type="text" name="lowTempMessage" value={this.state.lowTempMessage} onChange={this.handleInputChange} />
+            Low Temp: <input type="text" name="lowTemp" value={this.state.lowTemp} onChange={this.handleInputChange} />
+            Low Temp Message: <input type="text" name="lowTempMessage" value={this.state.lowTempMessage} onChange={this.handleInputChange} />
           </p>
           Number to Send To: <input type="text" name="number" value={this.state.number} onChange={this.handleInputChange} />
-          <button onClick={()=>this.setState({sendEnable:true})}>Enable Sending ({this.state.sendEnable?'Enabled':'Disabled'})</button>
+          <button onClick={() => this.setState({ sendEnable: true })}>Enable Sending ({this.state.sendEnable ? 'Enabled' : 'Disabled'})</button>
         </header>
         <p className="App-intro">
-          The temperature read is currently {this.state.testdata[0] ? isNaN(this.state.testdata[0].y)? ' N/A':this.state.testdata[0].y : ' N/A'} {this.state.currentScale+' '}
+          The temperature read is currently {this.state.testdata[0] ? isNaN(this.state.testdata[0].y) ? ' N/A' : this.state.testdata[0].y : ' N/A'} {this.state.currentScale + ' '}
           <button onClick={this.switchScales}>
             Switch Scale
         </button>
