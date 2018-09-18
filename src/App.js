@@ -17,7 +17,11 @@ class App extends Component {
       number: '13194159830',
       lowTemp: 0,
       highTemp: 50000,
-      visited: false
+      visited: false,
+      sendEnable:false,
+      highTempMessage:'The temperature is very high. Its ',
+      lowTempMessage:'The temperature is very low. Its ',
+      intervalID:0
     };
   }
   handleInputChange = (event) => {
@@ -27,7 +31,8 @@ class App extends Component {
     const name = target.name;
 
     this.setState({
-      [name]: value
+      [name]: value,
+      sendEnable:false
     });
   }
 
@@ -47,14 +52,14 @@ class App extends Component {
   sendMessage = (hl, temp) => {
     if (hl === 'high') {
       this.postToTwilio({
-        Body: `The temperature is very high. Its ${temp} degrees!`,
+        Body: `${this.state.highTempMessage + temp} degrees!`,
         From: '+17128230557',
         To: '+' + this.state.number
       })
     }
     if (hl === 'low') {
       this.postToTwilio({
-        Body: `The temperature is very low. Its ${temp} degrees!`,
+        Body: `${this.state.lowTempMessage + temp} degrees!`,
         From: '+17128230557',
         To: '+' + this.state.number
       })
@@ -99,7 +104,7 @@ class App extends Component {
           timeout:3000
         })
         if (this.state.currentScale === 'F') {
-          receved.data.tempC = this.toF(receved.tempC)
+          receved.data.tempC = this.toF(receved.data.tempC)
         }
         let temp = receved.data.tempC ? receved.data.tempC:Number.NaN
         datain = { x: receved.data.time, y: temp };
@@ -122,10 +127,9 @@ class App extends Component {
         this.setState({ visited: false })
       }
     }, 1000)
-
   }
   switchScales = () => {
-    this.clearInterval();
+    clearInterval(this.interval);
     if (this.state.currentScale === 'F') {
       let temp = this.state.testdata.map((a) => {
         a.y = this.toC(a.y)
@@ -159,14 +163,19 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-          High Temp: <input type="text" name="highTemp" value={this.state.highTemp} onChange={this.handleInputChange} />
+          <p>
+            High Temp: <input type="text" name="highTemp" value={this.state.highTemp} onChange={this.handleInputChange} />
+            High Temp Message: <input type="text" name="highTempMessage" value={this.state.highTempMessage} onChange={this.handleInputChange} />
+          </p>
+          <p>
           Low Temp: <input type="text" name="lowTemp" value={this.state.lowTemp} onChange={this.handleInputChange} />
+          Low Temp Message: <input type="text" name="lowTempMessage" value={this.state.lowTempMessage} onChange={this.handleInputChange} />
+          </p>
           Number to Send To: <input type="text" name="number" value={this.state.number} onChange={this.handleInputChange} />
+          <button onClick={()=>this.setState({sendEnable:true})}>Enable Sending ({this.state.sendEnable?'Enabled':'Disabled'})</button>
         </header>
         <p className="App-intro">
-          Currently {this.state.testdata[0] ? isNaN(this.state.testdata[0].y)? ' N/A':this.state.testdata[0].y : ' N/A'} {this.state.currentScale+' '}
+          The temperature read is currently {this.state.testdata[0] ? isNaN(this.state.testdata[0].y)? ' N/A':this.state.testdata[0].y : ' N/A'} {this.state.currentScale+' '}
           <button onClick={this.switchScales}>
             Switch Scale
         </button>

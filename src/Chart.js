@@ -55,22 +55,18 @@ class LineChart extends Component {
         pan: {
             enabled: true,    // Enable panning
             mode: 'x',        // Allow panning in the x direction
-            rangeMin: {
-                x: 0       // Min value of the delay option
+            rangeMin:{
+                x:0
             },
-            rangeMax: {
-                x: 1       // Max value of the delay option
-            }
         },
         zoom: {
             enabled: true,    // Enable zooming
-            mode: 'x',        // Allow zooming in the x direction
-            rangeMin: {
-                x: 0       // Min value of the duration option
+            mode: 'x',      // Allow zooming in the x direction
+            rangeMin:{
+                x:0,
+                y:0
             },
-            rangeMax: {
-                x: 300       // Max value of the duration option
-            }
+
         }
     }
 
