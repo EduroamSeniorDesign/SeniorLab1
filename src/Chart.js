@@ -5,14 +5,13 @@ import { Chart, Line } from 'react-chartjs-2';
 import Hammer from 'hammerjs';
 import zoom from 'chartjs-plugin-zoom'
 import streaming from 'chartjs-plugin-streaming'
-
+import moment from 'moment'
 
 
 class LineChart extends Component {
     refreshChart = (chart)=>{
         chart.data.datasets[0].data = this.props.dataset;
         chart.data.labels=[]
-
     }
     config = {
         legend: {
@@ -20,12 +19,27 @@ class LineChart extends Component {
         },
         scales: {
             xAxes: [{
-                type: 'realtime'    // x axis will auto-scroll from right to left
+                type: 'realtime',    // x axis will auto-scroll from right to left
+                ticks:{
+                    callback: (value,index,values)=>{
+                        let date1 = moment()
+                        let date2 = moment(value,'h:mm:ss.SSS a')
+                        let seconds = moment.duration(date1.diff(date2)).asSeconds();
+                        return Math.round(seconds)
+                    }
+                }
+                
             }],
+            yAxes: [{
+                ticks:{
+                    min: 10,
+                    max: 50
+                }
+            }]
         },
         plugins: {
             streaming: {            // enabled by default
-                duration: 3000,    // data in the past 20000 ms will be displayed
+                duration: 300000,    // data in the past 20000 ms will be displayed
                 refresh: 1000,      // onRefresh callback will be called every 1000 ms
                 frameRate: 30,      // chart is drawn 30 times every second
                 pause: false,       // chart is not paused    
@@ -55,7 +69,7 @@ class LineChart extends Component {
                 x: 0       // Min value of the duration option
             },
             rangeMax: {
-                x: 300000       // Max value of the duration option
+                x: 300       // Max value of the duration option
             }
         }
     }

@@ -7,7 +7,7 @@ var qs = require('qs');
 
 
 class App extends Component {
-  url = '192.168.86.39:5000'
+  url = '192.168.43.89:5000'
   constructor(props) {
     super(props)
     this.state = {
@@ -69,17 +69,19 @@ class App extends Component {
     Axios.get(url, {
       headers: {
         'Access-Control-Allow-Origin': '*',
-      }
+      },
+      timeout:2000
     }).then((initialdata) => {
-      initialdata = initialdata.map((a) => {
+      initialdata = initialdata.data.data.map((a) => {
         let b = {}
         b.x = a.time
-        b.y = a.data
+        b.y = a.tempC ? a.tempC : Number.NaN
         return b;
       })
       this.setState({ testdata: initialdata })
-    }).catch(err => console.error(err))
-    this.startInterval();
+    }).catch(err => console.error(err)).finally(()=>{
+      this.startInterval();
+    })
   }
 
   toF = (temp) => temp * (9 / 5) + 32
@@ -93,20 +95,22 @@ class App extends Component {
         let receved = await Axios.get(url, {
           headers: {
             'Access-Control-Allow-Origin': '*',
-          }
+          },
+          timeout:3000
         })
         if (this.state.currentScale === 'F') {
-          receved.time = this.ToC(receved.time)
+          receved.data.tempC = this.toF(receved.tempC)
         }
-        datain = { x: receved.time, y: receved.tempC };
+        let temp = receved.data.tempC ? receved.data.tempC:Number.NaN
+        datain = { x: receved.data.time, y: temp };
       }
       catch (err) {
-        datain = { x: 0, y: null }
+        datain = { x: 0, y: Number.NaN }
       }
 
       let data = this.state.testdata;
-      data.push(datain);
-      this.setState({ testdata: data, current: 0 })
+      data.unshift(datain);
+      this.setState({ testdata: data})
       if (datain.y > this.state.highTemp && !this.state.visited) {
         this.sendMessage('high', datain.y);
         this.setState({ visited: true })
@@ -121,7 +125,7 @@ class App extends Component {
 
   }
   switchScales = () => {
-    clearInterval();
+    this.clearInterval();
     if (this.state.currentScale === 'F') {
       let temp = this.state.testdata.map((a) => {
         a.y = this.toC(a.y)
@@ -145,7 +149,8 @@ class App extends Component {
     await Axios.post(url, { seconds: 10 },{
       headers: {
         'Access-Control-Allow-Origin': '*',
-      }
+      },
+      timeout:1000
     });
 
   }
@@ -161,8 +166,9 @@ class App extends Component {
           Number to Send To: <input type="text" name="number" value={this.state.number} onChange={this.handleInputChange} />
         </header>
         <p className="App-intro">
+          Currently {this.state.testdata[0] ? isNaN(this.state.testdata[0].y)? ' N/A':this.state.testdata[0].y : ' N/A'} {this.state.currentScale+' '}
           <button onClick={this.switchScales}>
-            Switch Scale(Currently this.state.currentScale)
+            Switch Scale
         </button>
           <LineChart dataset={this.state.testdata} data={{
             labels: [],
