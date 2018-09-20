@@ -40,8 +40,8 @@ class LineChart extends Component {
                     labelString: 'Temperature in C'
                   },
                 ticks:{
-                    min: -10,
-                    max: 63
+                    min: 10,
+                    max: 50
                 }
             }]
         },

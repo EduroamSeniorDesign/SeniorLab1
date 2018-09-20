@@ -53,19 +53,17 @@ class App extends Component {
   sendMessage = (hl, temp) => {
     if (hl === 'high') {
       this.postToTwilio({
-        Body: `${this.state.highTempMessage + temp} degrees!`,
+        Body: `${this.state.highTempMessage + temp}`,
         From: '+17128230557',
         To: '+' + this.state.number
       })
     }
     if (hl === 'low') {
       this.postToTwilio({
-        Body: `${this.state.lowTempMessage + temp} degrees!`,
+        Body: `${this.state.lowTempMessage + temp}!`,
         From: '+17128230557',
         To: '+' + this.state.number
       })
-        .then(message => console.log(message.sid))
-        .done();
     }
   }
 
@@ -84,9 +82,10 @@ class App extends Component {
         b.y = a.tempC
         return b;
       })
+      initialdata = initialdata. reverse()
       if(initialdata.length){
         this.setState({ testdata: initialdata,
-          outVal: initialdata[0].y })
+          outVal: initialdata[0].y.toFixed(3) })
       }else{
         this.setState({ testdata: initialdata,
           outVal: 'Sensor Faulty' })
@@ -125,7 +124,7 @@ class App extends Component {
           })
         }else{
           this.setState({
-            outVal:receved.data.tempC
+            outVal:receved.data.tempC.toFixed(3)
           })
         }
         datain = { x: receved.data.time, y: receved.data.tempC };
@@ -174,12 +173,12 @@ class App extends Component {
   }
   postButton = async () => {
     let url = `http://${this.url}/post`
-    await Axios.post(url, { seconds: 10 }, {
+    let receved = await Axios.get(url, {
       headers: {
         'Access-Control-Allow-Origin': '*',
       },
       timeout: 1000
-    });
+    })
 
   }
 
