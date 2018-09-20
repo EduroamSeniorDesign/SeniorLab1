@@ -21,6 +21,7 @@ class App extends Component {
       sendEnable: false,
       highTempMessage: 'The temperature is very high. Its ',
       lowTempMessage: 'The temperature is very low. Its ',
+      outVal: 'NO DATA',
       intervalID: 0
     };
   }
@@ -80,17 +81,29 @@ class App extends Component {
       initialdata = initialdata.data.data.map((a) => {
         let b = {}
         b.x = a.time
-        b.y = a.tempC ? a.tempC : Number.NaN
+        b.y = a.tempC
         return b;
       })
-      this.setState({ testdata: initialdata })
-    }).catch(err => console.error(err)).finally(() => {
+      if(initialdata.length){
+        this.setState({ testdata: initialdata,
+          outVal: initialdata[0].y })
+      }else{
+        this.setState({ testdata: initialdata,
+          outVal: 'Sensor Faulty' })
+      }
+    }).catch( err => {
+        console.error(err)
+        this.setState({
+          outVal:'NO DATA'
+        })
+      }
+    ).finally(() => {
       this.startInterval();
     })
   }
 
   toF = (temp) => temp * (9 / 5) + 32
-  toC = (temp) => temp * (5 / 9) - 32
+  toC = (temp) => (temp-32) * (5 / 9)
 
   startInterval = () => {
     this.interval = setInterval(async () => {
@@ -106,10 +119,21 @@ class App extends Component {
         if (this.state.currentScale === 'F') {
           receved.data.tempC = this.toF(receved.data.tempC)
         }
-        let temp = receved.data.tempC ? receved.data.tempC : Number.NaN
-        datain = { x: receved.data.time, y: temp };
+        if(receved.data.tempC==null){
+          this.setState({
+            outVal:'SENSOR ERROR'
+          })
+        }else{
+          this.setState({
+            outVal:receved.data.tempC
+          })
+        }
+        datain = { x: receved.data.time, y: receved.data.tempC };
       }
       catch (err) {
+        this.setState({
+          outVal:'NO DATA'
+        })
         datain = { x: 0, y: Number.NaN }
       }
 
@@ -119,7 +143,7 @@ class App extends Component {
       if (datain.y > this.state.highTemp && !this.state.visited&&this.state.sendEnable) {
         this.sendMessage('high', datain.y);
         this.setState({ visited: true })
-      } else if (datain.y < this.state.lowTemp && !this.state.visited&&this.state.sendEnable) {
+      } else if (datain.y < this.state.lowTemp &&!isNaN(datain.y) && !this.state.visited&&this.state.sendEnable) {
         this.sendMessage('low', datain.y)
         this.setState({ visited: true })
       } else if (datain.y < this.state.highTemp && datain.y > this.state.lowTemp && this.state.visited) {
@@ -165,17 +189,17 @@ class App extends Component {
         <header className="App-header">
           <p>
             High Temp: <input type="text" name="highTemp" value={this.state.highTemp} onChange={this.handleInputChange} />
-            High Temp Message: <input type="text" name="highTempMessage" value={this.state.highTempMessage} onChange={this.handleInputChange} />
+            High Temp Message: <textarea style={{resize:'none'}} type="text" name="highTempMessage" value={this.state.highTempMessage} onChange={this.handleInputChange} />
           </p>
           <p>
             Low Temp: <input type="text" name="lowTemp" value={this.state.lowTemp} onChange={this.handleInputChange} />
-            Low Temp Message: <input type="text" name="lowTempMessage" value={this.state.lowTempMessage} onChange={this.handleInputChange} />
+            Low Temp Message: <textarea type="text"style={{resize:'none'}}  name="lowTempMessage" value={this.state.lowTempMessage} onChange={this.handleInputChange} />
           </p>
           Number to Send To: <input type="text" name="number" value={this.state.number} onChange={this.handleInputChange} />
           <button onClick={() => this.setState({ sendEnable: true })}>Enable Sending ({this.state.sendEnable ? 'Enabled' : 'Disabled'})</button>
         </header>
         <p className="App-intro">
-          The temperature read is currently {this.state.testdata[0] ? isNaN(this.state.testdata[0].y) ? ' N/A' : this.state.testdata[0].y : ' N/A'} {this.state.currentScale + ' '}
+          The temperature read is currently {this.state.outVal} {this.state.currentScale + ' '}
           <button onClick={this.switchScales}>
             Switch Scale
         </button>

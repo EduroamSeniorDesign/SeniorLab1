@@ -20,6 +20,10 @@ class LineChart extends Component {
         scales: {
             xAxes: [{
                 type: 'realtime',    // x axis will auto-scroll from right to left
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Seconds ago'
+                  },
                 ticks:{
                     callback: (value,index,values)=>{
                         let date1 = moment()
@@ -31,9 +35,13 @@ class LineChart extends Component {
                 
             }],
             yAxes: [{
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Temperature in C'
+                  },
                 ticks:{
-                    min: 10,
-                    max: 50
+                    min: -10,
+                    max: 63
                 }
             }]
         },
@@ -62,10 +70,7 @@ class LineChart extends Component {
         zoom: {
             enabled: true,    // Enable zooming
             mode: 'x',      // Allow zooming in the x direction
-            rangeMin:{
-                x:0,
-                y:0
-            },
+
 
         }
     }
